@@ -1,106 +1,124 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mpinson <marvin@42.fr>                     +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2017/03/12 18:48:28 by mpinson           #+#    #+#             */
+/*   Updated: 2017/03/12 18:48:35 by mpinson          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "get_next_line.h"
 
-int ft_check_static(t_env *e, char **line)
+int		ft_check_static(t_env *e, char **line)
 {
 	int i;
 
 	i = 0;
-
-	if(ft_strchr(e->str, '\n') != NULL)
+	if (ft_strchr(e->str, '\n') != NULL)
 	{
-		while(e->str[i] && e->str[i] != '\n')
+		while (e->str[i] && e->str[i] != '\n')
 			i++;
 		line[0] = ft_strjoin(line[0], ft_strsub(e->str, 0, i));
 		e->str = ft_strsub(e->str, i + 1, BUFF_SIZE);
-		return(1);
+		return (1);
 	}
 	else
 	{
 		line[0] = ft_strjoin(line[0], e->str);
-		e->str = NULL;
+		ft_strdel(&e->str);
 	}
-	return(0);
+	return (0);
 }
 
-int ft_check_fd(t_env *e, int fd)
+t_env	*ft_check_fd(t_env *e, int fd)
 {
+	int		bol;
+	t_env	*tmp2;
 
-	while(fd != e->fd)
+	bol = 0;
+	while (e->presed)
+		e = e->presed;
+	while (e->next && fd != e->fd)
+		e = e->next;
+	if (fd == e->fd)
+		return (e);
+	else
 	{
-		if(fd == e->fd)
-			return(0);
-		if(e->next)
-			e = e->next;
-		else
-			break;
+		tmp2 = (t_env *)malloc(sizeof(t_env));
+		tmp2->next = NULL;
+		tmp2->presed = e;
+		tmp2->str = NULL;
+		tmp2->fd = fd;
+		tmp2->bol = 0;
+		e->next = tmp2;
+		e = e->next;
 	}
-	if(!(e->next = (t_env *)malloc(sizeof(t_env))))
-		return(-1);
-	e = e->next;
-	e->fd = fd;
-	if(!(e->str = (char *)malloc(sizeof(char))))
-		return(-1);
-	return(0);
+	return (e);
 }
 
-int get_next_line(const int fd, char **line)
+int		ft_suit(char **line, t_env *e, int fd)
 {
-	static t_env *e = NULL;
-	char str[BUFF_SIZE + 1];
-	int test;
-	int i;
+	char	str[BUFF_SIZE + 1];
+	int		test;
+	int		i;
 
 	i = 0;
-	test = 0;
-	if(fd < 0 || line == NULL)
-		return(-1);
-	if(!e)
-	{
-		if(!(e = (t_env *)malloc(sizeof(t_env))))
-			return(-1);
-		e->str = NULL;
-		e->fd = fd;
-		e->bol = 0;
-	}
-	line[0] = ft_strdup("");
-	if(e->str && ft_check_static(e, line) == 1)
-		return(1);
 	ft_bzero(str, BUFF_SIZE + 1);
-	while((test = read(fd, str, BUFF_SIZE)) > 0)
+	while ((test = read(fd, str, BUFF_SIZE)) > 0)
 	{
-		if(ft_strchr(str, '\n') != NULL)
+		if (ft_strchr(str, '\n') != NULL)
 		{
-			while(str[i] != '\0' && str[i] != '\n')
+			while (str[i] != '\0' && str[i] != '\n')
 				i++;
 			line[0] = ft_strjoin(line[0], ft_strsub(str, 0, i));
 			e->str = ft_strsub(str, i + 1, BUFF_SIZE);
-			return(1);
+			return (1);
 		}
 		else
 			line[0] = ft_strjoin(line[0], str);
 		ft_bzero(str, BUFF_SIZE + 1);
 	}
-	if(fd < 0 || test == - 1)
-		return(-1);
-	if(line[0][0] != 0 && e->bol == 0)
-	{
-		e->bol = 1;
-		line[0] = ft_strjoin(line[0], str);
-		return(1);
-	}
-	return(0);
+	if (fd < 0 || test == -1)
+		return (-1);
+	return (0);
 }
 
+int		ft_fin(t_env *e, char **line)
+{
+	if (line[0][0] != 0 && e->bol == 0)
+	{
+		e->bol = 1;
+		return (1);
+	}
+	return (0);
+}
 
+int		get_next_line(const int fd, char **line)
+{
+	static t_env	*e = NULL;
+	int				i;
 
-
-
-
-
-
-
-
-
-
-
-
+	i = 0;
+	if (fd < 0 || line == NULL)
+		return (-1);
+	if (!e || e->fd != fd)
+	{
+		if (!(e = (t_env *)malloc(sizeof(t_env))))
+			return (-1);
+		e->next = NULL;
+		e->presed = NULL;
+		e->str = NULL;
+		e->fd = fd;
+		e->bol = 0;
+	}
+	line[0] = ft_strdup("");
+	e = ft_check_fd(e, fd);
+	if (e->str && ft_check_static(e, line) == 1)
+		return (1);
+	if ((i = ft_suit(line, e, fd)) != 0)
+		return (i);
+	return (ft_fin(e, line));
+}

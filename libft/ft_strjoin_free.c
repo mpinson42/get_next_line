@@ -14,15 +14,10 @@
 
 static void	ft_joinfree(char *s1, char *s2, int mode)
 {
-	if (s1 && mode == 0)
-		free(s1);
-	if (s2 && mode == 1)
-		free(s2);
-	if (s1 && s2 && mode == 2)
-	{
-		free(s1);
-		free(s2);
-	}
+	if (s1 && (mode == 0 || mode == 2))
+		ft_strdel(&s1);
+	if (s2 && (mode == 1 || mode == 2))
+		ft_strdel(&s2);
 }
 
 char		*ft_strjoin_free(char *s1, char *s2, int mode)
@@ -30,7 +25,6 @@ char		*ft_strjoin_free(char *s1, char *s2, int mode)
 	char	*str;
 	int		i;
 	char	*temp_str;
-
 
 	if (s1 == NULL || s2 == NULL)
 		return (NULL);

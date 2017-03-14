@@ -1,27 +1,37 @@
-#ifndef GNL_H
-#define GNL_H
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   get_next_line.h                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mpinson <marvin@42.fr>                     +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2017/03/12 18:55:50 by mpinson           #+#    #+#             */
+/*   Updated: 2017/03/12 18:55:55 by mpinson          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-#include "libft/libft.h"
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <stdio.h>
+#ifndef GET_NEXT_LINE_H
+# define GET_NEXT_LINE_H
 
-#define BUFF_SIZE 64
+# include "libft/libft.h"
+# include <sys/types.h>
+# include <sys/stat.h>
+# include <fcntl.h>
+# include <unistd.h>
+# include <stdio.h>
 
+# define BUFF_SIZE 16
 
-
-typedef struct s_env
+typedef struct		s_env
 {
-	int fd;
-	char *str;
-	int bol;
-	int bol2;
-	struct s_env *next;
+	int				fd;
+	char			*str;
+	int				bol;
+	int				bol2;
+	struct s_env	*next;
+	struct s_env	*presed;
+}					t_env;
 
-}				t_env;
-
-int get_next_line(const int fd, char **line);
+int					get_next_line(const int fd, char **line);
 
 #endif
