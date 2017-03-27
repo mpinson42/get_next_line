@@ -20,7 +20,7 @@
 # include <unistd.h>
 # include <stdio.h>
 
-# define BUFF_SIZE 16
+# define BUFF_SIZE 2
 
 typedef struct		s_env
 {
